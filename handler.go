@@ -8,18 +8,21 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/nats-io/nats.go"
 )
 
+// NATSPublisher is the interface for publishing messages to NATS.
+type NATSPublisher interface {
+	Publish(subject string, data []byte) error
+}
+
 // Handler provides HTTP endpoints for DLQ management.
-// Mount on your chi router with handler.Routes().
 type Handler struct {
-	store *Store
-	nc    *nats.Conn
+	store DataStore
+	nc    NATSPublisher
 }
 
 // NewHandler creates a DLQ HTTP handler.
-func NewHandler(store *Store, nc *nats.Conn) *Handler {
+func NewHandler(store DataStore, nc NATSPublisher) *Handler {
 	return &Handler{store: store, nc: nc}
 }
 

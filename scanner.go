@@ -4,21 +4,19 @@ import (
 	"context"
 	"log/slog"
 	"time"
-
-	"github.com/nats-io/nats.go"
 )
 
 // Scanner periodically checks for recoverable DLQ entries and republishes them.
 // This implements Phase 3 automated recovery from the spec.
 type Scanner struct {
-	store    *Store
-	nc       *nats.Conn
+	store    DataStore
+	nc       NATSPublisher
 	interval time.Duration
 	done     chan struct{}
 }
 
 // NewScanner creates a DLQ recovery scanner.
-func NewScanner(store *Store, nc *nats.Conn, interval time.Duration) *Scanner {
+func NewScanner(store DataStore, nc NATSPublisher, interval time.Duration) *Scanner {
 	return &Scanner{
 		store:    store,
 		nc:       nc,

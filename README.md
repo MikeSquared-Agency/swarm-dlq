@@ -61,6 +61,95 @@ flowchart TD
     style NOTE fill:none,stroke:none
 ```
 
+## NATS Subject Routing
+
+```mermaid
+flowchart LR
+    subgraph Dispatch Reasons
+        R1[no_capable_agent] --> S1[dlq.task.unassignable]
+        R2[all_agents_unavailable] --> S2[dlq.task.no_available_agent]
+        R3[policy_denied] --> S3[dlq.task.policy_denied]
+        R4[timeout_assigned] --> S4[dlq.task.assignment_timeout]
+        R5[timeout_in_progress] --> S5[dlq.task.execution_timeout]
+        R6[agent_crashed] --> S6[dlq.task.agent_crashed]
+    end
+
+    subgraph Warren Reasons
+        R7[boot_failure] --> S7[dlq.agent.boot_failure]
+        R8[pull_failure] --> S8[dlq.agent.pull_failure]
+        R9[crash_loop] --> S9[dlq.agent.crash_loop]
+    end
+```
+
+## Data Model
+
+```mermaid
+erDiagram
+    swarm_dlq {
+        uuid dlq_id PK
+        text original_subject
+        jsonb original_payload
+        text reason
+        text reason_detail
+        timestamptz failed_at
+        int retry_count
+        int max_retries
+        jsonb retry_history
+        text source
+        boolean recoverable
+        boolean recovered
+        timestamptz recovered_at
+        text recovered_by
+    }
+```
+
+## Recovery Flow
+
+```mermaid
+sequenceDiagram
+    participant API as DLQ API
+    participant Store as swarm_dlq
+    participant NATS as NATS JetStream
+    participant Scanner as Recovery Scanner
+
+    Note over Scanner: Every 5 minutes
+    Scanner->>Store: ListRecoverable()
+    Store-->>Scanner: entries (recoverable=true, recovered=false, <24h)
+    loop Each entry
+        Scanner->>NATS: Publish(original_subject, original_payload)
+        Scanner->>Store: MarkRecovered(dlq_id, "auto-scanner")
+    end
+
+    Note over API: Manual retry via HTTP
+    API->>Store: Get(dlq_id)
+    Store-->>API: entry
+    API->>NATS: Publish(original_subject, original_payload)
+    API->>Store: MarkRecovered(dlq_id, "api-retry")
+```
+
+## Component Dependency
+
+```mermaid
+graph TD
+    DLQ[dlq.go<br/>Types & Constants]
+    PUB[publisher.go<br/>NATS Publisher]
+    STORE[store.go<br/>Postgres Persistence]
+    PROC[processor.go<br/>Chronicle Integration]
+    HAND[handler.go<br/>HTTP API]
+    SCAN[scanner.go<br/>Auto Recovery]
+    IFACE[interface.go<br/>DataStore Interface]
+
+    PUB --> DLQ
+    STORE --> DLQ
+    STORE --> IFACE
+    PROC --> DLQ
+    PROC --> IFACE
+    HAND --> DLQ
+    HAND --> IFACE
+    SCAN --> DLQ
+    SCAN --> IFACE
+```
+
 ## Installation
 
 ```go
@@ -157,9 +246,21 @@ Mount under `/api/v1/dlq` on your router.
 ## Testing
 
 ```bash
-# Unit tests
-go test ./...
+# Unit tests (40 tests)
+go test ./... -v
 
 # Integration tests (requires Postgres with swarm_dlq table)
 DATABASE_URL=... go test ./... -v
 ```
+
+### Test Coverage
+
+| Package | Tests | Coverage |
+|---------|-------|----------|
+| `dlq_test.go` | 4 | Subject routing, entry defaults |
+| `handler_test.go` | 20 | All 6 HTTP endpoints, error paths |
+| `processor_test.go` | 7 | Process(), source inference, error paths |
+| `scanner_test.go` | 7 | Scan recovery, start/stop lifecycle, error paths |
+| `publisher_test.go` | 2 | Marshal round-trip, constructor |
+| `e2e_test.go` | 4 | Full lifecycle, discard, scanner recovery, retry-all |
+| `store_integration_test.go` | 5 | Insert, list, filter, recover, stats (requires DB) |

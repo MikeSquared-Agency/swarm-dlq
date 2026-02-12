@@ -11,11 +11,11 @@ import (
 // This is used by Chronicle: on any dlq.> event, call Process() to write to the
 // structured DLQ table in addition to the raw swarm_events log.
 type Processor struct {
-	store *Store
+	store DataStore
 }
 
 // NewProcessor creates a DLQ processor for Chronicle integration.
-func NewProcessor(store *Store) *Processor {
+func NewProcessor(store DataStore) *Processor {
 	return &Processor{store: store}
 }
 
