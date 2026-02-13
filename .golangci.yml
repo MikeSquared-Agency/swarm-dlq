@@ -1,0 +1,29 @@
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+linters-settings:
+  errcheck:
+    exclude-functions:
+      - (io.Writer).Write
+      - (*bytes.Buffer).Write
+      - (*bytes.Buffer).WriteString
+      - (net/http.ResponseWriter).Write
+      - fmt.Fprintf
+      - fmt.Fprintln
+      - (*encoding/json.Encoder).Encode
+      - (*encoding/json.Decoder).Decode
+      - encoding/json.Unmarshal
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+  max-issues-per-linter: 0
+  max-same-issues: 0
