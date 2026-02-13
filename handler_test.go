@@ -32,7 +32,7 @@ func TestHandler_List_Empty(t *testing.T) {
 	}
 
 	var entries []Entry
-	json.NewDecoder(w.Body).Decode(&entries)
+	_ = json.NewDecoder(w.Body).Decode(&entries)
 	if len(entries) != 0 {
 		t.Errorf("expected empty list, got %d entries", len(entries))
 	}
@@ -56,7 +56,7 @@ func TestHandler_List_WithEntries(t *testing.T) {
 	}
 
 	var entries []Entry
-	json.NewDecoder(w.Body).Decode(&entries)
+	_ = json.NewDecoder(w.Body).Decode(&entries)
 	if len(entries) != 3 {
 		t.Errorf("expected 3 entries, got %d", len(entries))
 	}
@@ -79,7 +79,7 @@ func TestHandler_List_FilterByRecovered(t *testing.T) {
 	}
 
 	var entries []Entry
-	json.NewDecoder(w.Body).Decode(&entries)
+	_ = json.NewDecoder(w.Body).Decode(&entries)
 	if len(entries) != 1 {
 		t.Errorf("expected 1 entry, got %d", len(entries))
 	}
@@ -101,7 +101,7 @@ func TestHandler_List_FilterByReason(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	var entries []Entry
-	json.NewDecoder(w.Body).Decode(&entries)
+	_ = json.NewDecoder(w.Body).Decode(&entries)
 	if len(entries) != 1 {
 		t.Errorf("expected 1 entry, got %d", len(entries))
 	}
@@ -120,7 +120,7 @@ func TestHandler_List_FilterBySource(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	var entries []Entry
-	json.NewDecoder(w.Body).Decode(&entries)
+	_ = json.NewDecoder(w.Body).Decode(&entries)
 	if len(entries) != 1 {
 		t.Errorf("expected 1 entry, got %d", len(entries))
 	}
@@ -160,7 +160,7 @@ func TestHandler_Get_Found(t *testing.T) {
 	}
 
 	var entry Entry
-	json.NewDecoder(w.Body).Decode(&entry)
+	_ = json.NewDecoder(w.Body).Decode(&entry)
 	if entry.DLQID != "abc-123" {
 		t.Errorf("expected abc-123, got %s", entry.DLQID)
 	}
@@ -337,7 +337,7 @@ func TestHandler_RetryAll_Success(t *testing.T) {
 	}
 
 	var body map[string]any
-	json.NewDecoder(w.Body).Decode(&body)
+	_ = json.NewDecoder(w.Body).Decode(&body)
 
 	retried := int(body["retried"].(float64))
 	total := int(body["total"].(float64))
@@ -375,7 +375,7 @@ func TestHandler_RetryAll_PartialFailure(t *testing.T) {
 	}
 
 	var body map[string]any
-	json.NewDecoder(w.Body).Decode(&body)
+	_ = json.NewDecoder(w.Body).Decode(&body)
 
 	failed := int(body["failed"].(float64))
 	if failed != 2 {
@@ -396,7 +396,7 @@ func TestHandler_RetryAll_Empty(t *testing.T) {
 	}
 
 	var body map[string]any
-	json.NewDecoder(w.Body).Decode(&body)
+	_ = json.NewDecoder(w.Body).Decode(&body)
 
 	total := int(body["total"].(float64))
 	if total != 0 {
@@ -423,7 +423,7 @@ func TestHandler_Stats(t *testing.T) {
 	}
 
 	var stats Stats
-	json.NewDecoder(w.Body).Decode(&stats)
+	_ = json.NewDecoder(w.Body).Decode(&stats)
 
 	if stats.Total != 4 {
 		t.Errorf("expected total 4, got %d", stats.Total)
@@ -468,7 +468,7 @@ func TestWriteJSON(t *testing.T) {
 	}
 
 	var body map[string]string
-	json.NewDecoder(w.Body).Decode(&body)
+	_ = json.NewDecoder(w.Body).Decode(&body)
 	if body["key"] != "value" {
 		t.Errorf("expected value, got %s", body["key"])
 	}

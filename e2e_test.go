@@ -71,7 +71,7 @@ func TestE2E_FullLifecycle(t *testing.T) {
 		t.Fatalf("step 2: list returned %d", w.Code)
 	}
 	var entries []Entry
-	json.NewDecoder(w.Body).Decode(&entries)
+	_ = json.NewDecoder(w.Body).Decode(&entries)
 	if len(entries) != 1 {
 		t.Fatalf("step 2: expected 1 entry in list, got %d", len(entries))
 	}
@@ -85,7 +85,7 @@ func TestE2E_FullLifecycle(t *testing.T) {
 		t.Fatalf("step 2: get returned %d", w.Code)
 	}
 	var fetched Entry
-	json.NewDecoder(w.Body).Decode(&fetched)
+	_ = json.NewDecoder(w.Body).Decode(&fetched)
 	if fetched.DLQID != "e2e-lifecycle-1" {
 		t.Errorf("step 2: expected e2e-lifecycle-1, got %s", fetched.DLQID)
 	}
@@ -96,7 +96,7 @@ func TestE2E_FullLifecycle(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	var statsBefore Stats
-	json.NewDecoder(w.Body).Decode(&statsBefore)
+	_ = json.NewDecoder(w.Body).Decode(&statsBefore)
 	if statsBefore.Total != 1 {
 		t.Errorf("step 3: expected total 1, got %d", statsBefore.Total)
 	}
@@ -127,7 +127,7 @@ func TestE2E_FullLifecycle(t *testing.T) {
 
 	// Verify the payload matches original.
 	var republished map[string]any
-	json.Unmarshal(msgs[0].Data, &republished)
+	_ = json.Unmarshal(msgs[0].Data, &republished)
 	if republished["task_id"] != "task-42" {
 		t.Errorf("step 4: republished payload missing task_id")
 	}
@@ -156,7 +156,7 @@ func TestE2E_FullLifecycle(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	var statsAfter Stats
-	json.NewDecoder(w.Body).Decode(&statsAfter)
+	_ = json.NewDecoder(w.Body).Decode(&statsAfter)
 	if statsAfter.Total != 1 {
 		t.Errorf("step 7: expected total 1, got %d", statsAfter.Total)
 	}
@@ -344,7 +344,7 @@ func TestE2E_RetryAllFlow(t *testing.T) {
 	}
 
 	var body map[string]any
-	json.NewDecoder(w.Body).Decode(&body)
+	_ = json.NewDecoder(w.Body).Decode(&body)
 
 	retried := int(body["retried"].(float64))
 	total := int(body["total"].(float64))

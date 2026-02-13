@@ -173,9 +173,9 @@ func (s *Store) Stats(ctx context.Context) (*Stats, error) {
 		BySource: make(map[string]int),
 	}
 
-	s.pool.QueryRow(ctx, `SELECT count(*) FROM swarm_dlq`).Scan(&st.Total)
-	s.pool.QueryRow(ctx, `SELECT count(*) FROM swarm_dlq WHERE recovered = false`).Scan(&st.Unrecovered)
-	s.pool.QueryRow(ctx, `SELECT count(*) FROM swarm_dlq WHERE recoverable = true AND recovered = false`).Scan(&st.Recoverable)
+	_ = s.pool.QueryRow(ctx, `SELECT count(*) FROM swarm_dlq`).Scan(&st.Total)
+	_ = s.pool.QueryRow(ctx, `SELECT count(*) FROM swarm_dlq WHERE recovered = false`).Scan(&st.Unrecovered)
+	_ = s.pool.QueryRow(ctx, `SELECT count(*) FROM swarm_dlq WHERE recoverable = true AND recovered = false`).Scan(&st.Recoverable)
 
 	rows, err := s.pool.Query(ctx, `SELECT reason, count(*) FROM swarm_dlq WHERE recovered = false GROUP BY reason`)
 	if err == nil {
