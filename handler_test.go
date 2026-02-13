@@ -1,6 +1,7 @@
 package dlq
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -212,7 +213,7 @@ func TestHandler_Retry_Success(t *testing.T) {
 	}
 
 	// Verify marked recovered.
-	entry, _ := store.Get(nil, "retry-1")
+	entry, _ := store.Get(context.TODO(), "retry-1")
 	if !entry.Recovered {
 		t.Error("expected entry to be marked recovered")
 	}
@@ -294,7 +295,7 @@ func TestHandler_Discard_Success(t *testing.T) {
 		t.Fatalf("expected 200, got %d", w.Code)
 	}
 
-	entry, _ := store.Get(nil, "discard-1")
+	entry, _ := store.Get(context.TODO(), "discard-1")
 	if !entry.Recovered {
 		t.Error("expected entry to be marked recovered after discard")
 	}

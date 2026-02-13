@@ -65,7 +65,7 @@ func TestIntegration_InsertAndGet(t *testing.T) {
 	}
 
 	// Cleanup.
-	pool.Exec(ctx, "DELETE FROM swarm_dlq WHERE dlq_id = $1", entry.DLQID)
+	_, _ = pool.Exec(ctx, "DELETE FROM swarm_dlq WHERE dlq_id = $1", entry.DLQID)
 }
 
 func TestIntegration_ListAndFilter(t *testing.T) {
@@ -109,7 +109,7 @@ func TestIntegration_ListAndFilter(t *testing.T) {
 
 	// Cleanup.
 	for _, e := range entries {
-		pool.Exec(ctx, "DELETE FROM swarm_dlq WHERE dlq_id = $1", e.DLQID)
+		_, _ = pool.Exec(ctx, "DELETE FROM swarm_dlq WHERE dlq_id = $1", e.DLQID)
 	}
 }
 
@@ -128,7 +128,7 @@ func TestIntegration_MarkRecovered(t *testing.T) {
 		FailedAt:        time.Now().UTC(),
 		Recoverable:     true,
 	}
-	s.Insert(ctx, entry)
+	_ = s.Insert(ctx, entry)
 
 	if err := s.MarkRecovered(ctx, id, "test-recovery"); err != nil {
 		t.Fatalf("mark recovered: %v", err)
@@ -148,7 +148,7 @@ func TestIntegration_MarkRecovered(t *testing.T) {
 	}
 
 	// Cleanup.
-	pool.Exec(ctx, "DELETE FROM swarm_dlq WHERE dlq_id = $1", id)
+	_, _ = pool.Exec(ctx, "DELETE FROM swarm_dlq WHERE dlq_id = $1", id)
 }
 
 func TestIntegration_ListRecoverable(t *testing.T) {
@@ -159,8 +159,8 @@ func TestIntegration_ListRecoverable(t *testing.T) {
 	prefix := "int-recoverable-" + time.Now().Format("150405")
 
 	// One recoverable, one not.
-	s.Insert(ctx, Entry{DLQID: prefix + "-a", OriginalSubject: "swarm.task.request", OriginalPayload: json.RawMessage(`{}`), Reason: ReasonNoCapableAgent, Source: SourceDispatch, FailedAt: time.Now().UTC(), Recoverable: true})
-	s.Insert(ctx, Entry{DLQID: prefix + "-b", OriginalSubject: "swarm.task.request", OriginalPayload: json.RawMessage(`{}`), Reason: ReasonPolicyDenied, Source: SourceDispatch, FailedAt: time.Now().UTC(), Recoverable: false})
+	_ = s.Insert(ctx, Entry{DLQID: prefix + "-a", OriginalSubject: "swarm.task.request", OriginalPayload: json.RawMessage(`{}`), Reason: ReasonNoCapableAgent, Source: SourceDispatch, FailedAt: time.Now().UTC(), Recoverable: true})
+	_ = s.Insert(ctx, Entry{DLQID: prefix + "-b", OriginalSubject: "swarm.task.request", OriginalPayload: json.RawMessage(`{}`), Reason: ReasonPolicyDenied, Source: SourceDispatch, FailedAt: time.Now().UTC(), Recoverable: false})
 
 	entries, err := s.ListRecoverable(ctx)
 	if err != nil {
@@ -177,7 +177,7 @@ func TestIntegration_ListRecoverable(t *testing.T) {
 	}
 
 	// Cleanup.
-	pool.Exec(ctx, "DELETE FROM swarm_dlq WHERE dlq_id LIKE $1", prefix+"%")
+	_, _ = pool.Exec(ctx, "DELETE FROM swarm_dlq WHERE dlq_id LIKE $1", prefix+"%")
 }
 
 func TestIntegration_Stats(t *testing.T) {

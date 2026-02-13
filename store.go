@@ -183,7 +183,9 @@ func (s *Store) Stats(ctx context.Context) (*Stats, error) {
 		for rows.Next() {
 			var reason string
 			var count int
-			rows.Scan(&reason, &count)
+			if err := rows.Scan(&reason, &count); err != nil {
+				continue
+			}
 			st.ByReason[reason] = count
 		}
 	}
@@ -194,7 +196,9 @@ func (s *Store) Stats(ctx context.Context) (*Stats, error) {
 		for rows2.Next() {
 			var source string
 			var count int
-			rows2.Scan(&source, &count)
+			if err := rows2.Scan(&source, &count); err != nil {
+				continue
+			}
 			st.BySource[source] = count
 		}
 	}
@@ -227,7 +231,7 @@ func scanEntry(row pgx.Row) (*Entry, error) {
 	if recoveredBy != nil {
 		e.RecoveredBy = *recoveredBy
 	}
-	json.Unmarshal(retryJSON, &e.RetryHistory)
+	_ = json.Unmarshal(retryJSON, &e.RetryHistory)
 	if e.RetryHistory == nil {
 		e.RetryHistory = []RetryAttempt{}
 	}
@@ -259,7 +263,7 @@ func scanEntryFromRows(rows pgx.Rows) (*Entry, error) {
 	if recoveredBy != nil {
 		e.RecoveredBy = *recoveredBy
 	}
-	json.Unmarshal(retryJSON, &e.RetryHistory)
+	_ = json.Unmarshal(retryJSON, &e.RetryHistory)
 	if e.RetryHistory == nil {
 		e.RetryHistory = []RetryAttempt{}
 	}
