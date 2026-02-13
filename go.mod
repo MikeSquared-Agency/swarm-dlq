@@ -1,4 +1,4 @@
-module github.com/DarlingtonDeveloper/swarm-dlq
+module github.com/MikeSquared-Agency/swarm-dlq
 
 go 1.22.2
 
